@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Events | College Event Management System</title>
+  <meta name="description" content="Discover, register for and attend college events with Campus Events.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <header class="site-header">
+    <nav class="nav container" aria-label="Main navigation">
+      <a href="#home" class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2v3M17 2v3M3 9h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+        </svg>
+        <span>Campus<span class="brand-accent">Events</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#organizers">Organizers</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+      </ul>
+      <a href="#events" class="btn btn-primary nav-cta">Register Now</a>
+    </nav>
+  </header>
+
+  <main id="home">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-text">
+          <span class="badge">College Event Management System</span>
+          <h1>Discover, register and attend <span class="highlight">campus events</span> in one place</h1>
+          <p class="lead">From hackathons to cultural fests, Campus Events helps students find what is happening on campus and helps clubs manage their events with ease.</p>
+          <div class="hero-actions">
+            <a href="#events" class="btn btn-primary">Browse Events</a>
+            <a href="#organizers" class="btn btn-outline">For Organizers</a>
+          </div>
+        </div>
+        <div class="hero-card" aria-label="Featured event preview">
+          <span class="chip chip-tech">Featured</span>
+          <h2>Annual Tech Fest 2026</h2>
+          <p class="muted">Main Auditorium &bull; 3 days of talks, workshops and contests</p>
+          <div class="hero-card-row">
+            <span>20 Dec 2026</span>
+            <span>9:00 AM</span>
+          </div>
+          <a href="#events" class="btn btn-primary btn-block">Reserve My Seat</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATISTICS -->
+    <section class="stats" aria-label="Event statistics">
+      <div class="container stats-grid">
+        <div class="stat"><strong>120+</strong><span>Events per year</span></div>
+        <div class="stat"><strong>35</strong><span>Active clubs</span></div>
+        <div class="stat"><strong>8,500</strong><span>Registered students</span></div>
+        <div class="stat"><strong>96%</strong><span>Attendance accuracy</span></div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section id="categories" class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Explore by category</h2>
+          <p class="muted">Find events that match your interests.</p>
+        </div>
+        <div class="category-grid">
+          <a href="#events" class="category-card">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+            <h3>Technical</h3>
+            <p>Hackathons, coding contests, workshops</p>
+          </a>
+          <a href="#events" class="category-card">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+            <h3>Cultural</h3>
+            <p>Music, dance, drama and fests</p>
+          </a>
+          <a href="#events" class="category-card">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20M12 2c3 3 4.5 6.5 4.5 10S15 19 12 22c-3-3-4.5-6.5-4.5-10S9 5 12 2z"/></svg>
+            <h3>Sports</h3>
+            <p>Tournaments and inter-college meets</p>
+          </a>
+          <a href="#events" class="category-card">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14l9-5-9-5-9 5 9 5zM5 11.5V17c0 1 3 3 7 3s7-2 7-3v-5.5"/></svg>
+            <h3>Academic</h3>
+            <p>Seminars, guest lectures, placements</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- UPCOMING EVENTS -->
+    <section id="events" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2>Upcoming events</h2>
+          <p class="muted">Register early, seats are limited.</p>
+        </div>
+        <div class="event-grid">
+
+          <article class="event-card">
+            <div class="event-top">
+              <span class="chip chip-tech">Technical</span>
+              <span class="seats">42 seats left</span>
+            </div>
+            <h3>CodeStorm Hackathon</h3>
+            <ul class="event-meta">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18M7 2v3M17 2v3M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>15 Dec 2026</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>10:00 AM</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>Computer Lab 2</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Coding Club</li>
+            </ul>
+            <div class="event-foot">
+              <span class="muted">158 registered</span>
+              <a href="#dashboard" class="btn btn-primary btn-sm">Register</a>
+            </div>
+          </article>
+
+          <article class="event-card">
+            <div class="event-top">
+              <span class="chip chip-culture">Cultural</span>
+              <span class="seats">120 seats left</span>
+            </div>
+            <h3>Rhythm Night</h3>
+            <ul class="event-meta">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18M7 2v3M17 2v3M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>18 Dec 2026</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>6:30 PM</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>Open Air Theatre</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Music Society</li>
+            </ul>
+            <div class="event-foot">
+              <span class="muted">380 registered</span>
+              <a href="#dashboard" class="btn btn-primary btn-sm">Register</a>
+            </div>
+          </article>
+
+          <article class="event-card">
+            <div class="event-top">
+              <span class="chip chip-sports">Sports</span>
+              <span class="seats">Few seats left</span>
+            </div>
+            <h3>Inter-Department Cricket Cup</h3>
+            <ul class="event-meta">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18M7 2v3M17 2v3M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>22 Dec 2026</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>8:00 AM</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>Main Ground</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Sports Committee</li>
+            </ul>
+            <div class="event-foot">
+              <span class="muted">176 registered</span>
+              <a href="#dashboard" class="btn btn-primary btn-sm">Register</a>
+            </div>
+          </article>
+
+          <article class="event-card">
+            <div class="event-top">
+              <span class="chip chip-academic">Academic</span>
+              <span class="seats">60 seats left</span>
+            </div>
+            <h3>AI in Industry: Guest Lecture</h3>
+            <ul class="event-meta">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18M7 2v3M17 2v3M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>28 Dec 2026</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v6l4 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>11:00 AM</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>Seminar Hall</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>CSE Department</li>
+            </ul>
+            <div class="event-foot">
+              <span class="muted">240 registered</span>
+              <a href="#dashboard" class="btn btn-primary btn-sm">Register</a>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Everything a campus event needs</h2>
+          <p class="muted">A student-first interface designed for clubs and attendees.</p>
+        </div>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Easy discovery</h3>
+            <p>See upcoming events with date, time, venue and organizer at a glance.</p>
+          </div>
+          <div class="feature">
+            <h3>Quick registration</h3>
+            <p>A clear register button on every event card keeps sign-up simple.</p>
+          </div>
+          <div class="feature">
+            <h3>QR event pass</h3>
+            <p>Each registration is designed to come with a QR pass for entry.</p>
+          </div>
+          <div class="feature">
+            <h3>Attendance tracking</h3>
+            <p>Organizers can see who registered and who attended.</p>
+          </div>
+          <div class="feature">
+            <h3>Club management</h3>
+            <p>Clubs get a dedicated space to manage their events.</p>
+          </div>
+          <div class="feature">
+            <h3>Responsive design</h3>
+            <p>Works on phones, tablets and desktops.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENT DASHBOARD PREVIEW -->
+    <section id="dashboard" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2>Student dashboard preview</h2>
+          <p class="muted">A sample view of a student's registrations (static demo data).</p>
+        </div>
+        <div class="dash-grid">
+          <div class="panel">
+            <h3>My registrations</h3>
+            <table class="table">
+              <thead>
+                <tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>CodeStorm Hackathon</td><td>15 Dec</td><td><span class="status status-ok">Confirmed</span></td></tr>
+                <tr><td>Rhythm Night</td><td>18 Dec</td><td><span class="status status-ok">Confirmed</span></td></tr>
+                <tr><td>Cricket Cup</td><td>22 Dec</td><td><span class="status status-wait">Pending</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- QR PASS -->
+          <div class="panel qr-panel" id="qr-pass">
+            <h3>Your event pass</h3>
+            <div class="qr-box" role="img" aria-label="Sample QR code placeholder">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <rect x="6" y="6" width="26" height="26" rx="3"/>
+                <rect x="68" y="6" width="26" height="26" rx="3"/>
+                <rect x="6" y="68" width="26" height="26" rx="3"/>
+                <rect x="40" y="10" width="8" height="8"/>
+                <rect x="40" y="40" width="20" height="8"/>
+                <rect x="12" y="42" width="10" height="10"/>
+                <rect x="70" y="44" width="10" height="10"/>
+                <rect x="44" y="64" width="12" height="12"/>
+                <rect x="72" y="70" width="18" height="8"/>
+                <rect x="66" y="84" width="10" height="10"/>
+              </svg>
+            </div>
+            <p class="muted">CodeStorm Hackathon<br>Pass ID: CE-2026-0158</p>
+            <p class="note">Placeholder graphic. A real QR code will be generated by a backend.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORGANIZER DASHBOARD -->
+    <section id="organizers" class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Club and organizer dashboard</h2>
+          <p class="muted">A preview of how clubs would manage their events.</p>
+        </div>
+        <div class="org-grid">
+          <div class="panel">
+            <h3>Coding Club overview</h3>
+            <div class="org-stats">
+              <div><strong>6</strong><span>Events</span></div>
+              <div><strong>158</strong><span>Registrations</span></div>
+              <div><strong>131</strong><span>Attended</span></div>
+            </div>
+            <div class="progress" aria-label="Attendance 83 percent">
+              <div class="progress-bar"></div>
+            </div>
+            <p class="muted">Attendance rate: 83%</p>
+          </div>
+          <div class="panel">
+            <h3>Organizer actions</h3>
+            <ul class="action-list">
+              <li><a href="#organizers">Create new event</a></li>
+              <li><a href="#organizers">Edit event details</a></li>
+              <li><a href="#organizers">View registrations</a></li>
+              <li><a href="#organizers">Scan QR for attendance</a></li>
+            </ul>
+            <p class="note">These are interface placeholders. They do not perform actions yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2>How it works</h2>
+        </div>
+        <ol class="steps">
+          <li><span class="step-num">1</span><h3>Browse</h3><p>Explore events by category.</p></li>
+          <li><span class="step-num">2</span><h3>Register</h3><p>Pick an event and sign up.</p></li>
+          <li><span class="step-num">3</span><h3>Get your pass</h3><p>Receive a QR event pass.</p></li>
+          <li><span class="step-num">4</span><h3>Attend</h3><p>Scan at the venue and enjoy.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- TECHNOLOGY FLOW -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2>Technology flow</h2>
+          <p class="muted">Only the frontend exists today. The rest is planned.</p>
+        </div>
+        <div class="flow">
+          <div class="flow-item flow-done"><strong>Frontend</strong><span>HTML + CSS (built)</span></div>
+          <div class="flow-item"><strong>Backend</strong><span>Node.js + Express (future)</span></div>
+          <div class="flow-item"><strong>Database</strong><span>Supabase / PostgreSQL (future)</span></div>
+          <div class="flow-item"><strong>Admin</strong><span>Club dashboard (future)</span></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <p class="footer-brand">Campus<span class="brand-accent">Events</span></p>
+        <p>A college event management system frontend built with HTML and CSS.</p>
+      </div>
+      <div>
+        <h3>Quick links</h3>
+        <a href="#events">Events</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#organizers">Organizers</a>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <p>events@yourcollege.edu</p>
+        <p>Student Activities Office</p>
+      </div>
+    </div>
+    <p class="copyright">&copy; 2026 Campus Events. College project.</p>
+  </footer>
+
+</body>
+</html>
