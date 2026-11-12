@@ -1,0 +1,42 @@
+#!/bin/sh
+# =============================================================================
+# Maven Wrapper Script for Unix/Linux/macOS (used by Render and CI systems)
+# This script downloads Maven automatically if not present.
+# =============================================================================
+set -e
+
+# Determine the script directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAVEN_WRAPPER_JAR="$SCRIPT_DIR/.mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES="$SCRIPT_DIR/.mvn/wrapper/maven-wrapper.properties"
+
+# Read the distributionUrl from properties
+DISTRIBUTION_URL=$(grep "distributionUrl" "$MAVEN_WRAPPER_PROPERTIES" | cut -d'=' -f2-)
+MAVEN_HOME="$HOME/.m2/wrapper/dists/$(basename "$DISTRIBUTION_URL" .zip)"
+
+# Download and extract Maven if not cached
+if [ ! -d "$MAVEN_HOME" ]; then
+  echo "Downloading Maven from: $DISTRIBUTION_URL"
+  mkdir -p "$MAVEN_HOME"
+  TEMP_ZIP="/tmp/maven.zip"
+  if command -v curl > /dev/null 2>&1; then
+    curl -fsSL "$DISTRIBUTION_URL" -o "$TEMP_ZIP"
+  elif command -v wget > /dev/null 2>&1; then
+    wget -q "$DISTRIBUTION_URL" -O "$TEMP_ZIP"
+  else
+    echo "ERROR: Neither curl nor wget is available." >&2
+    exit 1
+  fi
+  unzip -q "$TEMP_ZIP" -d "$MAVEN_HOME"
+  rm -f "$TEMP_ZIP"
+fi
+
+# Find the mvn binary inside the extracted directory
+MVN_CMD=$(find "$MAVEN_HOME" -name "mvn" -type f | head -1)
+if [ -z "$MVN_CMD" ]; then
+  echo "ERROR: Could not find mvn binary in $MAVEN_HOME" >&2
+  exit 1
+fi
+
+chmod +x "$MVN_CMD"
+exec "$MVN_CMD" "$@"

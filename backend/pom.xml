@@ -77,6 +77,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Spring Boot Actuator (health check endpoint for Render) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Testing Dependencies (JUnit 5, Mockito) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

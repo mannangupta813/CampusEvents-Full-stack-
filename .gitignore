@@ -41,11 +41,21 @@ Thumbs.db
 # Test coverage & caches
 .nyc_output/
 coverage/
-.mvn/wrapper/maven-wrapper.jar
 
-# Embedded Database Files
+# Maven wrapper JAR (binary — not committed; downloaded at build time)
+.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Local Maven repo cache created during Render build (not needed in git)
+backend/.m2repo/
+.m2repo/
+
+# Embedded Database Files (H2 local dev only)
 data/
 backend/data/
 *.mv.db
 *.trace.db
+
+# DO NOT ignore mvnw (Linux wrapper script — required for Render)
+!backend/mvnw
 
