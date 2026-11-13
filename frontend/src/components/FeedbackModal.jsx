@@ -101,3 +101,4 @@ export default function FeedbackModal({ event, isOpen, onClose }) {
     </div>
   );
 }
+
