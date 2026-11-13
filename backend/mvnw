@@ -40,3 +40,4 @@ fi
 
 chmod +x "$MVN_CMD"
 exec "$MVN_CMD" "$@"
+

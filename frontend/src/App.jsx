@@ -1,8 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AppFeaturesProvider } from './context/AppFeaturesContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Toast from './components/Toast';
+import ClubModal from './components/ClubModal';
 
 // Pages
 import Home from './pages/Home';
@@ -36,88 +39,91 @@ function ProtectedRoute({ children, allowedRoles }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <Navbar />
-          <main style={{ flex: 1 }}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:id" element={<EventDetails />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              
-              {/* Student Authenticated Routes */}
-              <Route 
-                path="/my-registrations" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_STUDENT', 'ROLE_ADMIN']}>
-                    <MyRegistrations />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/qr-pass/:id" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_STUDENT', 'ROLE_ORGANIZER', 'ROLE_ADMIN']}>
-                    <QrPass />
-                  </ProtectedRoute>
-                } 
-              />
+      <AppFeaturesProvider>
+        <BrowserRouter>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Navbar />
+            <main style={{ flex: 1 }}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/events/:id" element={<EventDetails />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                {/* Student Authenticated Routes */}
+                <Route 
+                  path="/my-registrations" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_STUDENT', 'ROLE_ADMIN']}>
+                      <MyRegistrations />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/qr-pass/:id" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_STUDENT', 'ROLE_ORGANIZER', 'ROLE_ADMIN']}>
+                      <QrPass />
+                    </ProtectedRoute>
+                  } 
+                />
 
-              {/* Organizer Routes */}
-              <Route 
-                path="/organizer" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
-                    <OrganizerDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/create-event" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
-                    <CreateEvent />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/edit-event/:id" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
-                    <EditEvent />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/attendance" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
-                    <Attendance />
-                  </ProtectedRoute>
-                } 
-              />
+                {/* Organizer Routes */}
+                <Route 
+                  path="/organizer" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
+                      <OrganizerDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/create-event" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
+                      <CreateEvent />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/edit-event/:id" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
+                      <EditEvent />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/attendance" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_ORGANIZER', 'ROLE_ADMIN']}>
+                      <Attendance />
+                    </ProtectedRoute>
+                  } 
+                />
 
-              {/* Super Admin Routes */}
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } 
-              />
+                {/* Super Admin Routes */}
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
 
-              {/* Catch-all */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </BrowserRouter>
+                {/* Catch-all */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+            <Footer />
+            <ClubModal />
+            <Toast />
+          </div>
+        </BrowserRouter>
+      </AppFeaturesProvider>
     </AuthProvider>
   );
 }
-

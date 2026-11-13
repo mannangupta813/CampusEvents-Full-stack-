@@ -2,12 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useAppFeatures } from '../context/AppFeaturesContext';
+import CalendarView from '../components/CalendarView';
+import { 
+  Ticket, 
+  Calendar, 
+  MapPin, 
+  QrCode, 
+  Heart, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  Bell, 
+  Trash2, 
+  ArrowRight, 
+  Sparkles,
+  AlertTriangle
+} from 'lucide-react';
 
 export default function MyRegistrations() {
-  const { user, addToast } = useAuth();
+  const { user } = useAuth();
+  const { wishlist, toggleWishlist, showToast } = useAppFeatures();
+
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('ALL'); // ALL, UPCOMING, ATTENDED, CANCELLED
+  const [mainTab, setMainTab] = useState('registrations'); // 'registrations', 'wishlist', 'calendar', 'reminders'
+  const [regStatusFilter, setRegStatusFilter] = useState('ALL'); // 'ALL', 'CONFIRMED', 'ATTENDED', 'CANCELLED'
 
   useEffect(() => {
     loadRegistrations();
@@ -19,7 +39,7 @@ export default function MyRegistrations() {
       const data = await api.getMyRegistrations();
       setRegistrations(data || []);
     } catch (err) {
-      addToast(err.message || 'Failed to load registrations', 'error');
+      showToast(err.message || 'Failed to load registrations', 'error');
     } finally {
       setLoading(false);
     }
@@ -32,205 +52,409 @@ export default function MyRegistrations() {
 
     try {
       await api.cancelRegistration(id);
-      addToast(`Registration for "${eventTitle}" cancelled.`, 'warning');
+      showToast(`Registration for "${eventTitle}" has been cancelled.`, 'info');
       loadRegistrations();
     } catch (err) {
-      addToast(err.message || 'Failed to cancel registration', 'error');
+      showToast(err.message || 'Failed to cancel registration', 'error');
     }
   };
 
-  // Stats
+  // KPIs
   const totalCount = registrations.length;
   const upcomingCount = registrations.filter(r => r.status === 'CONFIRMED').length;
   const attendedCount = registrations.filter(r => r.status === 'ATTENDED').length;
-  const cancelledCount = registrations.filter(r => r.status === 'CANCELLED').length;
+  const wishlistCount = wishlist.length;
 
   const filteredRegistrations = registrations.filter(r => {
-    if (activeTab === 'UPCOMING') return r.status === 'CONFIRMED';
-    if (activeTab === 'ATTENDED') return r.status === 'ATTENDED';
-    if (activeTab === 'CANCELLED') return r.status === 'CANCELLED';
+    if (regStatusFilter === 'CONFIRMED') return r.status === 'CONFIRMED';
+    if (regStatusFilter === 'ATTENDED') return r.status === 'ATTENDED';
+    if (regStatusFilter === 'CANCELLED') return r.status === 'CANCELLED';
     return true;
   });
 
+  // Extract registered events for Calendar
+  const registeredEventsForCalendar = registrations
+    .filter(r => r.status !== 'CANCELLED')
+    .map(r => ({
+      id: r.eventId,
+      title: r.eventTitle,
+      eventDate: r.eventDate,
+      eventTime: r.eventTime,
+      venue: r.venue,
+      status: r.status
+    }));
+
   return (
-    <div className="section" style={{ paddingTop: '2.5rem' }}>
-      <div className="container">
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+    <div className="container" style={{ padding: '2.5rem 1.5rem 5rem' }}>
+      {/* Welcome Banner */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <span className="badge badge-primary">Student Command Center</span>
+        <h1 style={{ fontSize: '2.25rem', fontWeight: 800, marginTop: '0.25rem' }}>
+          Welcome back, {user?.fullName || 'Student'}
+        </h1>
+        <p className="text-muted" style={{ fontSize: '0.95rem' }}>
+          Roll No: <strong>{user?.rollNo || '21BCS1045'}</strong> &middot; Department of {user?.department || 'Computer Science'}
+        </p>
+      </div>
+
+      {/* Metric KPI Cards */}
+      <div className="metrics-grid">
+        <div className="metric-card">
+          <div className="metric-icon-wrap">
+            <Ticket size={24} />
+          </div>
           <div>
-            <span className="badge badge-primary">Student Dashboard</span>
-            <h1 style={{ fontSize: '2.25rem', fontWeight: 800, margin: '0.4rem 0 0.25rem' }}>
-              My Event Registrations
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-              Logged in as <strong>{user?.fullName}</strong> ({user?.rollNo || 'Roll No Unspecified'}) • {user?.department}
-            </p>
-          </div>
-          <Link to="/events" className="btn btn-primary">
-            + Discover More Events
-          </Link>
-        </div>
-
-        {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
-          <div className="stat-card">
-            <div className="stat-icon">🎟️</div>
-            <div>
-              <div className="stat-value">{totalCount}</div>
-              <div className="stat-label">Total Passes</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#ecfdf5', color: '#059669' }}>⏳</div>
-            <div>
-              <div className="stat-value">{upcomingCount}</div>
-              <div className="stat-label">Upcoming Confirmed</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#e0f2fe', color: '#0284c7' }}>✅</div>
-            <div>
-              <div className="stat-value">{attendedCount}</div>
-              <div className="stat-label">Checked In / Attended</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#fef2f2', color: '#dc2626' }}>❌</div>
-            <div>
-              <div className="stat-value">{cancelledCount}</div>
-              <div className="stat-label">Cancelled</div>
-            </div>
+            <div className="metric-val">{totalCount}</div>
+            <div className="metric-lbl">Total Registered</div>
           </div>
         </div>
 
-        {/* Tab Filters */}
-        <div className="category-pills">
-          <button 
-            onClick={() => setActiveTab('ALL')}
-            className={`pill-btn ${activeTab === 'ALL' ? 'active' : ''}`}
-          >
-            All Registrations ({totalCount})
-          </button>
-          <button 
-            onClick={() => setActiveTab('UPCOMING')}
-            className={`pill-btn ${activeTab === 'UPCOMING' ? 'active' : ''}`}
-          >
-            Confirmed Upcoming ({upcomingCount})
-          </button>
-          <button 
-            onClick={() => setActiveTab('ATTENDED')}
-            className={`pill-btn ${activeTab === 'ATTENDED' ? 'active' : ''}`}
-          >
-            Attended ({attendedCount})
-          </button>
-          <button 
-            onClick={() => setActiveTab('CANCELLED')}
-            className={`pill-btn ${activeTab === 'CANCELLED' ? 'active' : ''}`}
-          >
-            Cancelled ({cancelledCount})
-          </button>
+        <div className="metric-card">
+          <div className="metric-icon-wrap" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--primary)' }}>
+            <Calendar size={24} />
+          </div>
+          <div>
+            <div className="metric-val">{upcomingCount}</div>
+            <div className="metric-lbl">Upcoming Events</div>
+          </div>
         </div>
 
-        {/* Registration Cards */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-muted)' }}>
-            Loading your event passes...
+        <div className="metric-card">
+          <div className="metric-icon-wrap" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+            <CheckCircle2 size={24} />
           </div>
-        ) : filteredRegistrations.length === 0 ? (
-          <div style={{ textAlign: 'center', background: 'white', padding: '4rem 2rem', borderRadius: '20px', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎫</div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>No registrations found</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-              You have not registered for any events under this category yet.
-            </p>
-            <Link to="/events" className="btn btn-primary">
-              Explore Upcoming Events
-            </Link>
+          <div>
+            <div className="metric-val">{attendedCount}</div>
+            <div className="metric-lbl">Attended Check-ins</div>
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.75rem' }}>
-            {filteredRegistrations.map(reg => (
-              <div 
-                key={reg.id} 
-                style={{ 
-                  background: 'white', 
-                  borderRadius: '20px', 
-                  border: '1px solid var(--border)', 
-                  overflow: 'hidden', 
-                  boxShadow: 'var(--shadow-sm)',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                {/* Banner */}
-                <div style={{ position: 'relative', height: '160px', overflow: 'hidden' }}>
-                  <img 
-                    src={reg.bannerUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80'} 
-                    alt={reg.eventTitle} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                  <span className="event-category-chip">{reg.categoryName || 'General'}</span>
-                  
-                  {/* Status badge in top right */}
-                  <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-                    {reg.status === 'ATTENDED' ? (
-                      <span className="badge badge-success">✓ Attended</span>
-                    ) : reg.status === 'CANCELLED' ? (
-                      <span className="badge badge-danger">Cancelled</span>
-                    ) : (
-                      <span className="badge badge-primary">Confirmed</span>
-                    )}
-                  </div>
-                </div>
+        </div>
 
-                {/* Content */}
-                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-                    Pass ID: {reg.registrationNumber}
-                  </div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-main)' }}>
-                    {reg.eventTitle}
-                  </h3>
+        <div className="metric-card">
+          <div className="metric-icon-wrap" style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e' }}>
+            <Heart size={24} />
+          </div>
+          <div>
+            <div className="metric-val">{wishlistCount}</div>
+            <div className="metric-lbl">Saved to Wishlist</div>
+          </div>
+        </div>
+      </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                    <div>📅 <strong>Date:</strong> {reg.eventDate} @ {reg.eventTime}</div>
-                    <div>📍 <strong>Venue:</strong> {reg.venue}</div>
-                    <div>🎪 <strong>Organizer:</strong> {reg.clubName || 'College Club'}</div>
-                    {reg.checkedInAt && (
-                      <div style={{ color: '#059669', fontWeight: 600 }}>
-                        🕒 Checked in: {new Date(reg.checkedInAt).toLocaleString()} ({reg.checkinMethod})
+      {/* Tab Navigation */}
+      <div className="tab-navigation">
+        <button 
+          onClick={() => setMainTab('registrations')} 
+          className={`tab-btn ${mainTab === 'registrations' ? 'active' : ''}`}
+        >
+          <Ticket size={16} /> My Event Passes ({totalCount})
+        </button>
+
+        <button 
+          onClick={() => setMainTab('wishlist')} 
+          className={`tab-btn ${mainTab === 'wishlist' ? 'active' : ''}`}
+        >
+          <Heart size={16} /> Saved Wishlist ({wishlistCount})
+        </button>
+
+        <button 
+          onClick={() => setMainTab('calendar')} 
+          className={`tab-btn ${mainTab === 'calendar' ? 'active' : ''}`}
+        >
+          <Calendar size={16} /> Personal Schedule
+        </button>
+
+        <button 
+          onClick={() => setMainTab('reminders')} 
+          className={`tab-btn ${mainTab === 'reminders' ? 'active' : ''}`}
+        >
+          <Bell size={16} /> Activity &amp; Reminders
+        </button>
+      </div>
+
+      {/* ==========================================================
+          TAB 1: EVENT PASSES & REGISTRATIONS
+          ========================================================== */}
+      {mainTab === 'registrations' && (
+        <div>
+          {/* Sub-filter pills */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => setRegStatusFilter('ALL')} 
+              className={`badge ${regStatusFilter === 'ALL' ? 'badge-primary' : 'badge-outline'}`}
+              style={{ cursor: 'pointer', padding: '0.45rem 0.85rem' }}
+            >
+              All Passes ({registrations.length})
+            </button>
+            <button 
+              onClick={() => setRegStatusFilter('CONFIRMED')} 
+              className={`badge ${regStatusFilter === 'CONFIRMED' ? 'badge-primary' : 'badge-outline'}`}
+              style={{ cursor: 'pointer', padding: '0.45rem 0.85rem' }}
+            >
+              Confirmed / Upcoming ({upcomingCount})
+            </button>
+            <button 
+              onClick={() => setRegStatusFilter('ATTENDED')} 
+              className={`badge ${regStatusFilter === 'ATTENDED' ? 'badge-primary' : 'badge-outline'}`}
+              style={{ cursor: 'pointer', padding: '0.45rem 0.85rem' }}
+            >
+              Attended ({attendedCount})
+            </button>
+            <button 
+              onClick={() => setRegStatusFilter('CANCELLED')} 
+              className={`badge ${regStatusFilter === 'CANCELLED' ? 'badge-primary' : 'badge-outline'}`}
+              style={{ cursor: 'pointer', padding: '0.45rem 0.85rem' }}
+            >
+              Cancelled
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="skeleton" style={{ height: '280px', borderRadius: 'var(--radius-xl)' }}></div>
+          ) : filteredRegistrations.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
+              {filteredRegistrations.map(reg => (
+                <div 
+                  key={reg.id} 
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-xl)',
+                    padding: '1.5rem',
+                    boxShadow: 'var(--shadow-sm)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div>
+                    <div className="flex-between" style={{ marginBottom: '0.75rem' }}>
+                      <span className="badge badge-accent">Pass #{reg.id}</span>
+                      {reg.status === 'CONFIRMED' && (
+                        <span className="badge badge-success">✓ Confirmed</span>
+                      )}
+                      {reg.status === 'ATTENDED' && (
+                        <span className="badge badge-primary">★ Attended</span>
+                      )}
+                      {reg.status === 'CANCELLED' && (
+                        <span className="badge badge-danger">Cancelled</span>
+                      )}
+                    </div>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.75rem' }}>
+                      {reg.eventTitle}
+                    </h3>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Calendar size={14} className="text-primary" />
+                        <span>{reg.eventDate} &middot; {reg.eventTime}</span>
                       </div>
-                    )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <MapPin size={14} className="text-primary" />
+                        <span>{reg.venue}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Actions */}
-                  <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: reg.status === 'CONFIRMED' ? '1.5fr 1fr' : '1fr', gap: '0.75rem' }}>
+                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     {reg.status !== 'CANCELLED' ? (
-                      <Link to={`/qr-pass/${reg.id}`} className="btn btn-primary btn-sm btn-block">
-                        View QR Pass 🎟️
-                      </Link>
+                      <>
+                        <Link 
+                          to={`/qr-pass/${reg.id}`} 
+                          className="btn btn-primary btn-sm"
+                          style={{ flex: 1, justifyContent: 'center' }}
+                        >
+                          <QrCode size={15} /> Open QR Pass
+                        </Link>
+                        {reg.status === 'CONFIRMED' && (
+                          <button 
+                            onClick={() => handleCancelRegistration(reg.id, reg.eventTitle)}
+                            className="btn btn-outline btn-sm"
+                            title="Cancel Registration"
+                            style={{ color: 'var(--danger)' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </>
                     ) : (
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center', padding: '0.4rem 0' }}>
-                        Registration Voided
+                      <span className="text-muted" style={{ fontSize: '0.8rem' }}>
+                        Registration cancelled &middot; pass deactivated
                       </span>
                     )}
-
-                    {reg.status === 'CONFIRMED' && (
-                      <button 
-                        onClick={() => handleCancelRegistration(reg.id, reg.eventTitle)}
-                        className="btn btn-outline btn-sm"
-                        style={{ color: '#dc2626', borderColor: '#fca5a5' }}
-                      >
-                        Cancel
-                      </button>
-                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '4rem 2rem',
+              textAlign: 'center'
+            }}>
+              <Ticket size={48} className="text-muted" style={{ margin: '0 auto 1rem' }} />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>No Registrations Found</h3>
+              <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                You have not registered for any events under this filter yet.
+              </p>
+              <Link to="/events" className="btn btn-primary">
+                Browse Campus Events
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ==========================================================
+          TAB 2: WISHLIST (SAVED EVENTS)
+          ========================================================== */}
+      {mainTab === 'wishlist' && (
+        <div>
+          {wishlist.length > 0 ? (
+            <div className="events-grid">
+              {wishlist.map(event => (
+                <div key={event.id} className="event-card">
+                  <div className="event-card-img-wrap">
+                    <img src={event.bannerUrl} alt={event.title} className="event-card-img" />
+                    <button 
+                      onClick={() => toggleWishlist(event)} 
+                      className="card-wishlist-btn active"
+                      title="Remove from Wishlist"
+                    >
+                      <Heart size={16} fill="#ffffff" />
+                    </button>
+                    <span className="badge badge-accent" style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
+                      {event.categoryName}
+                    </span>
+                  </div>
+
+                  <div className="event-card-body">
+                    <h3 className="event-card-title">{event.title}</h3>
+                    <p className="event-card-desc">{event.description}</p>
+
+                    <div className="event-meta-row">
+                      <div className="event-meta-item">
+                        <Calendar size={14} className="text-primary" />
+                        <span>{event.eventDate}</span>
+                      </div>
+                      <div className="event-meta-item">
+                        <MapPin size={14} className="text-primary" />
+                        <span>{event.venue}</span>
+                      </div>
+                    </div>
+
+                    <div className="event-card-footer">
+                      <button 
+                        onClick={() => toggleWishlist(event)} 
+                        className="btn btn-outline btn-sm"
+                        style={{ color: 'var(--danger)' }}
+                      >
+                        Remove
+                      </button>
+                      <Link to={`/events/${event.id}`} className="btn btn-primary btn-sm">
+                        Register Now
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '4rem 2rem',
+              textAlign: 'center'
+            }}>
+              <Heart size={48} className="text-muted" style={{ margin: '0 auto 1rem' }} />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Your Wishlist is Empty</h3>
+              <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                Click the heart icon on any event card to save it here for quick access later.
+              </p>
+              <Link to="/events" className="btn btn-primary">
+                Explore Events to Save
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ==========================================================
+          TAB 3: PERSONAL MONTHLY CALENDAR
+          ========================================================== */}
+      {mainTab === 'calendar' && (
+        <div>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+              Your Registered Event Calendar
+            </h3>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>
+              Days with registered events are marked with interactive colored chips.
+            </p>
           </div>
-        )}
-      </div>
+          <CalendarView events={registeredEventsForCalendar} />
+        </div>
+      )}
+
+      {/* ==========================================================
+          TAB 4: REMINDERS & ACTIVITY LOG
+          ========================================================== */}
+      {mainTab === 'reminders' && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '2rem'
+        }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+            Student Reminders &amp; Activity
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Clock size={20} />
+              </div>
+              <div>
+                <strong>Event Reminder: CodeSprint 2026</strong>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                  The 24-hour hackathon starts in 3 days. Please bring your laptop and charger to Tech Complex Lab 4.
+                </p>
+                <span className="text-muted" style={{ fontSize: '0.75rem' }}>Sent today at 09:00 AM</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--success-bg)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CheckCircle2 size={20} />
+              </div>
+              <div>
+                <strong>Attendance Verified: AI Innovation Workshop</strong>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                  Your turnstile check-in was recorded successfully by Organizer Board. Certificate eligible.
+                </p>
+                <span className="text-muted" style={{ fontSize: '0.75rem' }}>2 days ago</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--warning-bg)', color: 'var(--warning)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <strong>Registration Deadline Warning: E-Summit 2026</strong>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                  Pitch desk submissions close in 48 hours for angel investor rounds.
+                </p>
+                <span className="text-muted" style={{ fontSize: '0.75rem' }}>Yesterday</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

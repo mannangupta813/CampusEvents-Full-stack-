@@ -26,6 +26,8 @@ services:
     # Environment variables — FILL THESE IN on the Render dashboard
     # (do NOT put real secrets here; this file is committed to GitHub)
     envVars:
+      - key: JAVA_VERSION
+        value: 25
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: SPRING_DATASOURCE_URL

@@ -64,26 +64,27 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/clubs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/stats/public").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
+                        // Public endpoints (matched both with and without context-path prefix)
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/events/**", "/api/events/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/categories/**", "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/clubs/**", "/api/clubs/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/stats/public", "/api/stats/public").permitAll()
+                        .requestMatchers("/h2-console/**", "/api/h2-console/**").permitAll()
+                        .requestMatchers("/actuator/**", "/api/actuator/**").permitAll()
 
                         // Role-specific endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/organizer/**").hasAnyRole("ORGANIZER", "ADMIN")
-                        .requestMatchers("/api/attendance/**").hasAnyRole("ORGANIZER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/organizer/**", "/api/organizer/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers("/attendance/**", "/api/attendance/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/events/**", "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/events/**", "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/events/**", "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
 
                         // Authenticated student/user endpoints
-                        .requestMatchers("/api/registrations/**").authenticated()
-                        .requestMatchers("/api/profile/**").authenticated()
-                        .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/registrations/**", "/api/registrations/**").authenticated()
+                        .requestMatchers("/profile/**", "/api/profile/**").authenticated()
+                        .requestMatchers("/notifications/**", "/api/notifications/**").authenticated()
                         .anyRequest().authenticated()
                 );
 

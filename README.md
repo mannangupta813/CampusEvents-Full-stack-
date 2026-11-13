@@ -33,7 +33,7 @@
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 18, React Router v6, React Context, Axios / Fetch API, Responsive CSS |
-| **Backend** | Java 21, Spring Boot 3.2.5, Spring Security, Spring Data JPA, Hibernate, Bean Validation |
+| **Backend** | Java 25 LTS, Spring Boot 3.5.16, Spring Security, Spring Data JPA, Hibernate, Bean Validation |
 | **Security** | BCrypt Password Hashing, JWT (HMAC-SHA256 Token Authentication), Role-Based Access Control (RBAC) |
 | **Database** | MySQL 8.0+ (Production/Local), H2 (In-memory fallback/Testing) |
 | **Testing** | JUnit 5, Mockito, Spring Boot Test |
@@ -234,4 +234,3 @@ Campus_Events/
 4. Environment Variables:
    - `VITE_API_BASE_URL`: `https://your-render-backend-url.onrender.com/api`
 5. Click **Deploy**.
-

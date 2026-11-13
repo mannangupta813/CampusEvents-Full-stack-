@@ -1,62 +1,141 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Calendar, Heart, Shield, Mail, Phone, MapPin, Sparkles, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer style={{ background: '#0f172a', color: '#94a3b8', padding: '4rem 0 2rem', marginTop: 'auto' }}>
+    <footer style={{ 
+      backgroundColor: 'var(--bg-card)', 
+      borderTop: '1px solid var(--border)', 
+      padding: '4rem 0 2rem',
+      marginTop: 'auto',
+      transition: 'var(--transition)'
+    }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '3rem', marginBottom: '3rem' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '2.5rem',
+          marginBottom: '3rem'
+        }}>
+          {/* Brand Column */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'white', fontWeight: 800, fontSize: '1.25rem', marginBottom: '1rem' }}>
-              <span style={{ color: '#818cf8' }}>●</span> Campus Events
+            <div className="brand" style={{ marginBottom: '1rem' }}>
+              <div className="brand-icon">
+                <Calendar size={22} strokeWidth={2.5} />
+              </div>
+              <span>Campus<span className="brand-accent">Events</span></span>
             </div>
-            <p style={{ fontSize: '0.9rem', lineHeight: '1.6', color: '#cbd5e1' }}>
-              Discover. Register. Experience Campus. The unified college event lifecycle management and QR pass check-in platform.
+            <p className="text-muted" style={{ fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              The unified event intelligence and ticketing ecosystem empowering campus clubs, tech societies, and student innovators.
             </p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-subtle)', padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }}></span>
+              Spring Boot & React REST Network: Operational
+            </div>
           </div>
 
+          {/* Quick Links */}
           <div>
-            <h4 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Discover
-            </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.9rem' }}>
-              <li><Link to="/events?category=Hackathons" style={{ color: '#94a3b8' }}>Hackathons</Link></li>
-              <li><Link to="/events?category=Workshops" style={{ color: '#94a3b8' }}>Workshops</Link></li>
-              <li><Link to="/events?category=Cultural" style={{ color: '#94a3b8' }}>Cultural Fests</Link></li>
-              <li><Link to="/events?category=Sports" style={{ color: '#94a3b8' }}>Sports Leagues</Link></li>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem' }}>Quick Navigation</h4>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem' }}>
+              <li>
+                <Link to="/events" className="text-muted" style={{ transition: 'color 0.2s' }}>
+                  Explore All Events
+                </Link>
+              </li>
+              <li>
+                <Link to="/my-registrations" className="text-muted" style={{ transition: 'color 0.2s' }}>
+                  Student QR Passes
+                </Link>
+              </li>
+              <li>
+                <Link to="/organizer" className="text-muted" style={{ transition: 'color 0.2s' }}>
+                  Club Organizer Hub
+                </Link>
+              </li>
+              <li>
+                <Link to="/attendance" className="text-muted" style={{ transition: 'color 0.2s' }}>
+                  Turnstile QR Scanner
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin" className="text-muted" style={{ transition: 'color 0.2s' }}>
+                  Administration Portal
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Popular Categories */}
           <div>
-            <h4 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Portals
-            </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.9rem' }}>
-              <li><Link to="/my-registrations" style={{ color: '#94a3b8' }}>Student Dashboard</Link></li>
-              <li><Link to="/organizer" style={{ color: '#94a3b8' }}>Organizer Hub</Link></li>
-              <li><Link to="/attendance" style={{ color: '#94a3b8' }}>QR Pass Scanner</Link></li>
-              <li><Link to="/admin" style={{ color: '#94a3b8' }}>Administrative Console</Link></li>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem' }}>Event Verticals</h4>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.875rem' }}>
+              <li>
+                <Link to="/events?category=1" className="text-muted">
+                  Hackathons & Dev Sprints
+                </Link>
+              </li>
+              <li>
+                <Link to="/events?category=6" className="text-muted">
+                  E-Summits & Pitch Days
+                </Link>
+              </li>
+              <li>
+                <Link to="/events?category=2" className="text-muted">
+                  AI & Deep Tech Workshops
+                </Link>
+              </li>
+              <li>
+                <Link to="/events?category=5" className="text-muted">
+                  Inter-Department Sports
+                </Link>
+              </li>
+              <li>
+                <Link to="/events?category=4" className="text-muted">
+                  Cultural Nights & Indie Bands
+                </Link>
+              </li>
             </ul>
           </div>
 
+          {/* Campus Support */}
           <div>
-            <h4 style={{ color: 'white', fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Course Information
-            </h4>
-            <p style={{ fontSize: '0.85rem', lineHeight: '1.6', color: '#cbd5e1' }}>
-              Full Stack Web Development Capstone Project.<br />
-              <strong>Frontend:</strong> React.js & React Router<br />
-              <strong>Backend:</strong> Java Spring Boot 3 & Security<br />
-              <strong>Database:</strong> MySQL 8.0 & Hibernate
-            </p>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem' }}>Student Affairs Support</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }} className="text-muted">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <MapPin size={16} className="text-primary" />
+                <span>Student Activities Council, Block 4</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mail size={16} className="text-primary" />
+                <span>events@campusevents.edu</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Phone size={16} className="text-primary" />
+                <span>+91 1800-CAMPUS-EVT</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid #1e293b', paddingTop: '2rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-          <div>&copy; 2026 Campus Events. Student Activities Council. All rights reserved.</div>
+        {/* Bottom Bar */}
+        <div style={{
+          borderTop: '1px solid var(--border)',
+          paddingTop: '2rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1rem',
+          fontSize: '0.825rem',
+          color: 'var(--text-muted)'
+        }}>
+          <div>
+            &copy; 2026 Campus Events System &middot; Academic Full-Stack Web Development Project
+          </div>
           <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <span>Built with Spring Boot & React</span>
-            <span>RESTful Micro-Architecture</span>
+            <span>Powered by React 18, Spring Boot 3 &amp; MySQL</span>
           </div>
         </div>
       </div>

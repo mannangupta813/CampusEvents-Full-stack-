@@ -2,14 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useAppFeatures } from '../context/AppFeaturesContext';
+import { 
+  ArrowLeft, 
+  Download, 
+  Printer, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  User, 
+  CheckCircle2, 
+  Sparkles, 
+  ShieldCheck, 
+  QrCode,
+  ExternalLink
+} from 'lucide-react';
 
-// Clean deterministic SVG QR Code generator (no external CDN required!)
+// Crisp SVG QR Code generator
 function SvgQrCode({ value, size = 180 }) {
-  // Simple deterministic visual matrix hash from string token
   const cells = 21;
   const matrix = [];
   
-  // Hash seed
   let hash = 0;
   for (let i = 0; i < value.length; i++) {
     hash = ((hash << 5) - hash) + value.charCodeAt(i);
@@ -19,7 +32,6 @@ function SvgQrCode({ value, size = 180 }) {
   for (let r = 0; r < cells; r++) {
     const row = [];
     for (let c = 0; c < cells; c++) {
-      // Corner positioning markers
       const isCorner1 = (r < 7 && c < 7);
       const isCorner2 = (r < 7 && c >= cells - 7);
       const isCorner3 = (r >= cells - 7 && c < 7);
@@ -33,7 +45,6 @@ function SvgQrCode({ value, size = 180 }) {
                          (r >= cells - 5 && r <= cells - 3 && c >= 2 && c <= 4);
         row.push(isBorder || isCenter);
       } else {
-        // Data pseudo-bits
         const bit = ((hash ^ (r * 31 + c * 17)) & (1 << ((r + c) % 15))) !== 0;
         row.push(bit);
       }
@@ -67,7 +78,7 @@ function SvgQrCode({ value, size = 180 }) {
 export default function QrPass() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToast } = useAuth();
+  const { showToast } = useAppFeatures();
 
   const [registration, setRegistration] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,16 +86,10 @@ export default function QrPass() {
   useEffect(() => {
     async function fetchPass() {
       try {
-        let data;
-        if (id === 'demo') {
-          const list = await api.getMyRegistrations();
-          data = list[0];
-        } else {
-          data = await api.getRegistrationById(id);
-        }
+        const data = await api.getRegistrationById(id);
         setRegistration(data);
       } catch (err) {
-        addToast(err.message || 'Pass not found', 'error');
+        showToast(err.message || 'Failed to load pass', 'error');
       } finally {
         setLoading(false);
       }
@@ -98,117 +103,146 @@ export default function QrPass() {
 
   if (loading) {
     return (
-      <div className="section container" style={{ textAlign: 'center', padding: '5rem 0' }}>
-        <p style={{ color: 'var(--text-muted)' }}>Generating your digital QR pass...</p>
+      <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+        <div className="skeleton" style={{ width: '420px', height: '550px', margin: '0 auto', borderRadius: 'var(--radius-xl)' }}></div>
       </div>
     );
   }
 
   if (!registration) {
     return (
-      <div className="section container" style={{ textAlign: 'center', padding: '5rem 0' }}>
+      <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
         <h2>Pass Not Found</h2>
-        <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>The requested registration pass could not be retrieved.</p>
-        <Link to="/my-registrations" className="btn btn-primary">My Registrations</Link>
+        <p className="text-muted" style={{ margin: '1rem 0' }}>The requested registration pass is unavailable.</p>
+        <Link to="/my-registrations" className="btn btn-primary">Return to My Passes</Link>
       </div>
     );
   }
 
   return (
-    <div className="section" style={{ paddingTop: '2rem' }}>
-      <div className="container">
-        {/* Navigation back */}
-        <div style={{ maxWidth: '460px', margin: '0 auto 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Link to="/my-registrations" className="btn btn-secondary btn-sm">
-            ← Back to Registrations
+    <div className="container" style={{ padding: '2.5rem 1.5rem 5rem' }}>
+      <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+        {/* Back Link */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <Link to="/my-registrations" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            <ArrowLeft size={16} /> Back to My Registrations
           </Link>
-          <button onClick={handlePrint} className="btn btn-primary btn-sm">
-            🖨️ Print / Save PDF
-          </button>
         </div>
 
-        {/* Digital Ticket */}
-        <div className="ticket-wrapper">
-          <div className="ticket">
-            {/* Top Navy Section */}
-            <div className="ticket-header">
-              <div className="ticket-brand">🏛️ Campus Events Official Pass</div>
-              <h2 className="ticket-event-name">{registration.eventTitle}</h2>
-              <div className="ticket-sub">
-                {registration.categoryName || 'Technical'} • Organized by {registration.clubName || 'College Club'}
+        {/* Boarding Pass Container */}
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-xl)',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-xl)',
+          position: 'relative'
+        }}>
+          {/* Top Banner */}
+          <div style={{
+            background: 'var(--brand-gradient)',
+            padding: '1.75rem',
+            color: '#ffffff',
+            textAlign: 'center'
+          }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(255, 255, 255, 0.2)', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+              <ShieldCheck size={14} /> Official Verified Event Pass
+            </div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.25 }}>
+              {registration.eventTitle}
+            </h2>
+            <div style={{ fontSize: '0.85rem', opacity: 0.9, marginTop: '0.35rem' }}>
+              Pass Reference #{registration.id}
+            </div>
+          </div>
+
+          {/* QR Code Section */}
+          <div style={{
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            background: 'var(--bg-card)',
+            borderBottom: '2px dashed var(--border)'
+          }}>
+            <div style={{
+              padding: '1rem',
+              background: '#ffffff',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.08)'
+            }}>
+              <SvgQrCode value={registration.qrCodeToken || `CE-PASS-${registration.id}`} size={180} />
+            </div>
+
+            <div style={{
+              marginTop: '1rem',
+              fontFamily: 'monospace',
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
+              background: 'var(--bg-subtle)',
+              padding: '0.35rem 0.75rem',
+              borderRadius: 'var(--radius-sm)'
+            }}>
+              {registration.qrCodeToken || `CE-PASS-${registration.id}`}
+            </div>
+
+            <span className="badge badge-success" style={{ marginTop: '0.75rem' }}>
+              <CheckCircle2 size={12} /> Active &amp; Valid For Turnstile Check-in
+            </span>
+          </div>
+
+          {/* Ticket Metadata Details */}
+          <div style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+              <div>
+                <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  Student Attendee
+                </span>
+                <strong>{registration.studentName}</strong>
+              </div>
+
+              <div>
+                <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  Roll Number
+                </span>
+                <strong>{registration.studentRollNo || '21BCS1045'}</strong>
+              </div>
+
+              <div>
+                <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  Event Date &amp; Time
+                </span>
+                <strong>{registration.eventDate}</strong>
+                <div className="text-muted" style={{ fontSize: '0.75rem' }}>{registration.eventTime}</div>
+              </div>
+
+              <div>
+                <span className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>
+                  Campus Venue
+                </span>
+                <strong>{registration.venue}</strong>
               </div>
             </div>
 
-            {/* Perforated Notches Row */}
-            <div className="ticket-notch-row">
-              <div className="ticket-divider-line" />
+            {/* Quick Demo Turnstile Trigger */}
+            <div style={{ background: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Simulate Turnstile Scanner:</span>
+              <Link 
+                to={`/attendance?eventId=${registration.eventId}&scanToken=${registration.qrCodeToken}`}
+                className="btn btn-outline btn-sm"
+              >
+                Scan Pass <ExternalLink size={12} />
+              </Link>
             </div>
 
-            {/* Ticket Body with QR */}
-            <div className="ticket-body">
-              <div style={{ display: 'inline-block', marginBottom: '0.75rem' }}>
-                {registration.status === 'ATTENDED' ? (
-                  <span className="badge badge-success">✓ Checked In / Attended</span>
-                ) : registration.status === 'CANCELLED' ? (
-                  <span className="badge badge-danger">Cancelled Pass</span>
-                ) : (
-                  <span className="badge badge-primary">Valid Entry Pass</span>
-                )}
-              </div>
-
-              {/* QR Box */}
-              <div className="qr-box">
-                <SvgQrCode value={registration.qrToken || 'CAMPUS-EVENTS-DEMO-PASS'} size={180} />
-              </div>
-
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'monospace', wordBreak: 'break-all', marginBottom: '1rem' }}>
-                Token: <strong>{registration.qrToken}</strong>
-              </div>
-
-              {/* Student & Pass Details Grid */}
-              <div className="ticket-details-grid">
-                <div className="ticket-detail-item">
-                  <div className="label">Participant Name</div>
-                  <div className="value">{registration.studentName}</div>
-                </div>
-                <div className="ticket-detail-item">
-                  <div className="label">Roll / Reg No</div>
-                  <div className="value">{registration.studentRollNo || '21BCS1045'}</div>
-                </div>
-                <div className="ticket-detail-item">
-                  <div className="label">Event Date & Time</div>
-                  <div className="value">{registration.eventDate} @ {registration.eventTime}</div>
-                </div>
-                <div className="ticket-detail-item">
-                  <div className="label">Venue Location</div>
-                  <div className="value">{registration.venue}</div>
-                </div>
-                <div className="ticket-detail-item">
-                  <div className="label">Registration ID</div>
-                  <div className="value" style={{ fontFamily: 'monospace', color: 'var(--primary)' }}>
-                    {registration.registrationNumber}
-                  </div>
-                </div>
-                <div className="ticket-detail-item">
-                  <div className="label">Department</div>
-                  <div className="value">{registration.studentDepartment || 'CSE'}</div>
-                </div>
-              </div>
-
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.5, marginTop: '1.25rem' }}>
-                Present this digital QR pass at the entrance gate turnstiles. Passes are single-use, digitally signed, and registered strictly to your college ID.
-              </div>
-
-              {/* Fast Test Scanner Link for Evaluators */}
-              <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
-                <Link 
-                  to={`/attendance?scanToken=${encodeURIComponent(registration.qrToken)}&eventId=${registration.eventId}`}
-                  className="btn btn-outline btn-sm btn-block"
-                >
-                  ⚡ Test QR Scan as Organizer →
-                </Link>
-              </div>
-            </div>
+            {/* Print & Download Action */}
+            <button 
+              onClick={handlePrint} 
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              <Printer size={16} /> Print or Save PDF Pass
+            </button>
           </div>
         </div>
       </div>

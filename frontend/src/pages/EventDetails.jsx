@@ -2,35 +2,66 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useAppFeatures } from '../context/AppFeaturesContext';
+import FeedbackModal from '../components/FeedbackModal';
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Users, 
+  ShieldCheck, 
+  Heart, 
+  Share2, 
+  Building2, 
+  ArrowLeft, 
+  CheckCircle2, 
+  AlertCircle, 
+  Star, 
+  MessageSquare, 
+  Flame, 
+  ChevronRight,
+  ExternalLink,
+  QrCode
+} from 'lucide-react';
 
 export default function EventDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated, addToast } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const { wishlist, toggleWishlist, isWishlisted, shareEvent, openClubModal, getEventFeedbacks, showToast } = useAppFeatures();
 
   const [event, setEvent] = useState(null);
+  const [relatedEvents, setRelatedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [confirmedReg, setConfirmedReg] = useState(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
-    async function fetchEvent() {
+    async function fetchEventAndRelated() {
+      setLoading(true);
       try {
         const data = await api.getEventById(id);
         setEvent(data);
+
+        // Fetch related events in the same category
+        if (data && data.categoryId) {
+          const allCatEvents = await api.getEvents({ categoryId: data.categoryId });
+          setRelatedEvents(allCatEvents.filter(e => e.id !== Number(id)).slice(0, 3));
+        }
       } catch (err) {
-        addToast(err.message || 'Failed to load event details', 'error');
+        showToast(err.message || 'Failed to load event details', 'error');
       } finally {
         setLoading(false);
       }
     }
-    fetchEvent();
+    fetchEventAndRelated();
   }, [id]);
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
-      addToast('Please log in or create a student account to register.', 'warning');
-      navigate('/login?redirect=/events/' + id);
+      showToast('Please log in with your student account to register.', 'info');
+      navigate(`/login?redirect=/events/${id}`);
       return;
     }
 
@@ -44,9 +75,9 @@ export default function EventDetails() {
         availableSeats: Math.max(0, (prev.availableSeats || 1) - 1),
         totalRegistrations: (prev.totalRegistrations || 0) + 1
       }));
-      addToast('Registration confirmed! Your QR pass is ready.', 'success');
+      showToast('🎉 Registration confirmed! Your QR Pass has been generated.', 'success');
     } catch (err) {
-      addToast(err.message || 'Registration failed', 'error');
+      showToast(err.message || 'Registration failed', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -54,17 +85,19 @@ export default function EventDetails() {
 
   if (loading) {
     return (
-      <div className="section container" style={{ textAlign: 'center', padding: '5rem 0' }}>
-        <p style={{ color: 'var(--text-muted)' }}>Loading event details...</p>
+      <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
+        <div className="skeleton" style={{ width: '100%', height: '380px', borderRadius: 'var(--radius-xl)' }}></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="section container" style={{ textAlign: 'center', padding: '5rem 0' }}>
+      <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
         <h2>Event Not Found</h2>
-        <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>The event you requested could not be located.</p>
+        <p className="text-muted" style={{ margin: '1rem 0 1.5rem' }}>
+          The requested campus event could not be located or has been archived.
+        </p>
         <Link to="/events" className="btn btn-primary">Browse All Events</Link>
       </div>
     );
@@ -73,180 +106,325 @@ export default function EventDetails() {
   const isPast = new Date(event.eventDate) < new Date();
   const deadlinePassed = event.registrationDeadline && new Date(event.registrationDeadline) < new Date();
   const isFull = event.availableSeats <= 0;
-  const isRegistered = event.isRegisteredByCurrentUser || !!confirmedReg;
+  const isRegistered = event.isRegisteredByCurrentUser || Boolean(confirmedReg);
+
+  const eventFeedbacks = getEventFeedbacks(event.id);
+  const averageRating = eventFeedbacks.length > 0 
+    ? (eventFeedbacks.reduce((acc, curr) => acc + curr.rating, 0) / eventFeedbacks.length).toFixed(1)
+    : '5.0';
 
   return (
-    <div className="section" style={{ paddingTop: '2rem' }}>
-      <div className="container">
-        {/* Breadcrumb */}
-        <div style={{ marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-          <Link to="/" style={{ color: 'var(--primary)' }}>Home</Link> &gt;{' '}
-          <Link to="/events" style={{ color: 'var(--primary)' }}>Events</Link> &gt;{' '}
-          <span>{event.title}</span>
-        </div>
+    <div className="container" style={{ padding: '2rem 1.5rem 5rem' }}>
+      {/* Breadcrumb Path */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+        <Link to="/events" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <ArrowLeft size={14} /> Back to Events
+        </Link>
+        <span>/</span>
+        <span>{event.categoryName}</span>
+        <span>/</span>
+        <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{event.title}</span>
+      </div>
 
-        {/* Hero Banner */}
-        <div style={{ position: 'relative', height: '360px', borderRadius: '24px', overflow: 'hidden', marginBottom: '2.5rem', boxShadow: 'var(--shadow-lg)' }}>
-          <img 
-            src={event.bannerUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80'} 
-            alt={event.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 60%)' }} />
-          
-          <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: 'white' }}>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <span className="badge badge-primary">{event.categoryName || 'General'}</span>
-              <span className="badge" style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>{event.clubName || 'College Club'}</span>
+      {/* Hero Banner Header */}
+      <div style={{
+        position: 'relative',
+        borderRadius: 'var(--radius-xl)',
+        overflow: 'hidden',
+        height: '380px',
+        boxShadow: 'var(--shadow-lg)'
+      }}>
+        <img 
+          src={event.bannerUrl} 
+          alt={event.title} 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.3) 60%, transparent 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          padding: '2.5rem'
+        }}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+            <span className="badge badge-accent">{event.categoryName}</span>
+            <span 
+              className="badge badge-outline" 
+              style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', cursor: 'pointer' }}
+              onClick={() => openClubModal({ id: event.clubId, name: event.clubName, logoUrl: event.clubLogoUrl })}
+            >
+              <Building2 size={12} /> {event.clubName}
+            </span>
+            {isFull && <span className="badge badge-danger">Sold Out / Capacity Full</span>}
+            {isRegistered && <span className="badge badge-success">✓ You Are Registered</span>}
+          </div>
+
+          <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>
+            {event.title}
+          </h1>
+        </div>
+      </div>
+
+      {/* Main Content Layout */}
+      <div className="event-details-layout">
+        {/* Left Column: Description, Rules, Eligibility, Reviews */}
+        <div>
+          {/* About Section */}
+          <section style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>
+              About This Event
+            </h3>
+            <p style={{ lineHeight: 1.7, color: 'var(--text-main)', fontSize: '0.95rem', whiteSpace: 'pre-line' }}>
+              {event.description}
+            </p>
+          </section>
+
+          {/* Eligibility & Rules */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div style={{ background: 'var(--bg-card)', padding: '1.75rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <CheckCircle2 size={20} className="text-primary" />
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Eligibility Criteria</h4>
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                {event.eligibility || 'Open to all enrolled undergraduate and postgraduate university students.'}
+              </p>
             </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.5rem', lineHeight: 1.2 }}>{event.title}</h1>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.95rem', color: '#cbd5e1' }}>
-              <span>📅 {event.eventDate}</span>
-              <span>⏰ {event.eventTime}</span>
-              <span>📍 {event.venue}</span>
+
+            <div style={{ background: 'var(--bg-card)', padding: '1.75rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <ShieldCheck size={20} className="text-primary" />
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Event Rules &amp; Code of Conduct</h4>
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                {event.rules || 'Valid college ID and digital QR pass required at entrance turnstiles. Respect code of conduct.'}
+              </p>
             </div>
           </div>
+
+          {/* Attendee Ratings & Reviews Section */}
+          <section style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+            <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Student Reviews &amp; Feedback</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                  <div style={{ display: 'flex', color: '#f59e0b' }}>
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} size={16} fill="#f59e0b" stroke="#f59e0b" />
+                    ))}
+                  </div>
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{averageRating} out of 5</span>
+                  <span className="text-muted" style={{ fontSize: '0.85rem' }}>({eventFeedbacks.length} reviews)</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setFeedbackOpen(true)} 
+                className="btn btn-outline btn-sm"
+              >
+                <MessageSquare size={15} /> Leave Feedback
+              </button>
+            </div>
+
+            {eventFeedbacks.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {eventFeedbacks.map(f => (
+                  <div key={f.id} style={{ background: 'var(--bg-subtle)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                    <div className="flex-between" style={{ marginBottom: '0.35rem' }}>
+                      <strong style={{ fontSize: '0.9rem' }}>{f.userName}</strong>
+                      <span className="text-muted" style={{ fontSize: '0.75rem' }}>{f.createdAt}</span>
+                    </div>
+                    <div style={{ display: 'flex', color: '#f59e0b', marginBottom: '0.5rem' }}>
+                      {[...Array(f.rating)].map((_, i) => (
+                        <Star key={i} size={14} fill="#f59e0b" stroke="#f59e0b" />
+                      ))}
+                    </div>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-main)', lineHeight: 1.5 }}>
+                      "{f.comment}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted" style={{ fontSize: '0.875rem' }}>
+                No reviews yet. Be the first student to review this event after attending!
+              </p>
+            )}
+          </section>
+
+          {/* Related Events Section */}
+          {relatedEvents.length > 0 && (
+            <section style={{ marginTop: '3rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem' }}>
+                More Events in {event.categoryName}
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                {relatedEvents.map(rel => (
+                  <Link 
+                    key={rel.id} 
+                    to={`/events/${rel.id}`}
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                  >
+                    <img src={rel.bannerUrl} alt={rel.title} style={{ height: '120px', width: '100%', objectFit: 'cover' }} />
+                    <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.5rem' }}>{rel.title}</h4>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} /> {rel.eventDate}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
-        {/* Layout: Content Left & Registration Card Right */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1.2fr', gap: '3rem', alignItems: 'start' }}>
-          
-          {/* Main Details */}
-          <div>
-            {event.isCancelled && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '1rem 1.5rem', borderRadius: '12px', color: '#991b1b', marginBottom: '1.5rem', fontWeight: 600 }}>
-                ⚠️ Notice: This event has been cancelled by the club organizer.
+        {/* Right Sticky Registration Box */}
+        <div className="sticky-registration-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <span className="badge badge-primary">Event Pass</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--success)' }}>
+              Free Student Access
+            </span>
+          </div>
+
+          {/* Date & Time */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+              <Calendar size={18} className="text-primary" style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div>
+                <strong>Event Date</strong>
+                <div className="text-muted">{event.eventDate}</div>
               </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+              <Clock size={18} className="text-primary" style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div>
+                <strong>Time</strong>
+                <div className="text-muted">{event.eventTime}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+              <MapPin size={18} className="text-primary" style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div>
+                <strong>Campus Venue</strong>
+                <div className="text-muted">{event.venue}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+              <Users size={18} className="text-primary" style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div>
+                <strong>Registration Deadline</strong>
+                <div className="text-muted">{event.registrationDeadline}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Capacity Progress Bar */}
+          <div className="seat-progress-container" style={{ marginBottom: '1.5rem' }}>
+            <div className="seat-progress-labels">
+              <span>Seat Availability</span>
+              <span className="text-primary">
+                {event.availableSeats} of {event.maxCapacity} remaining
+              </span>
+            </div>
+            <div className="seat-progress-bar">
+              <div 
+                className="seat-progress-fill" 
+                style={{ width: `${Math.min(100, Math.round((event.totalRegistrations / event.maxCapacity) * 100))}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {isRegistered ? (
+              <Link 
+                to={confirmedReg ? `/qr-pass/${confirmedReg.id}` : '/my-registrations'} 
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <QrCode size={18} /> View Digital QR Pass
+              </Link>
+            ) : isFull ? (
+              <button disabled className="btn btn-secondary" style={{ width: '100%', cursor: 'not-allowed' }}>
+                Capacity Full
+              </button>
+            ) : deadlinePassed ? (
+              <button disabled className="btn btn-secondary" style={{ width: '100%', cursor: 'not-allowed' }}>
+                Registration Closed
+              </button>
+            ) : (
+              <button 
+                onClick={handleRegister} 
+                className="btn btn-primary btn-lg" 
+                style={{ width: '100%', justifyContent: 'center' }}
+                disabled={submitting}
+              >
+                {submitting ? 'Registering...' : 'Register for Event'}
+              </button>
             )}
 
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', border: '1px solid var(--border)', marginBottom: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-main)' }}>About the Event</h2>
-              <p style={{ color: '#334155', lineHeight: 1.8, fontSize: '1rem', whiteSpace: 'pre-line' }}>
-                {event.description}
-              </p>
-            </div>
-
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', border: '1px solid var(--border)', marginBottom: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-main)' }}>Eligibility & Requirements</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-subtle)', padding: '1rem', borderRadius: '12px', marginBottom: '1.25rem' }}>
-                <span style={{ fontSize: '1.5rem' }}>🎯</span>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Eligible Participants</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{event.eligibility || 'Open to all enrolled university students with valid ID.'}</div>
-                </div>
-              </div>
-
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '1.5rem 0 0.75rem' }}>Event Rules & Guidelines</h3>
-              <div style={{ color: '#334155', lineHeight: 1.7, fontSize: '0.95rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '12px', borderLeft: '4px solid var(--primary)' }}>
-                {event.rules || 'Please arrive 15 minutes prior to the start time with your digital QR pass. Maintain campus code of conduct.'}
-              </div>
-            </div>
-
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-main)' }}>Organizing Club</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem' }}>
-                  🎪
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>{event.clubName || 'College Student Activities Club'}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Official recognized collegiate organization</p>
-                </div>
-              </div>
+            {/* Wishlist & Share Buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <button 
+                onClick={() => toggleWishlist(event)} 
+                className={`btn btn-outline ${isWishlisted(event.id) ? 'text-danger' : ''}`}
+                style={{ justifyContent: 'center' }}
+              >
+                <Heart size={16} fill={isWishlisted(event.id) ? '#f43f5e' : 'none'} />
+                {isWishlisted(event.id) ? 'Saved' : 'Wishlist'}
+              </button>
+              <button 
+                onClick={() => shareEvent(event)} 
+                className="btn btn-outline"
+                style={{ justifyContent: 'center' }}
+              >
+                <Share2 size={16} /> Share
+              </button>
             </div>
           </div>
 
-          {/* Registration Sidebar Card */}
-          <div style={{ position: 'sticky', top: '90px' }}>
-            <div style={{ background: 'white', padding: '2rem', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '1.25rem' }}>Registration Desk</h3>
-
-              {/* Capacity Progress */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                  <span>Seats Filled</span>
-                  <span>{event.totalRegistrations || 0} / {event.maxCapacity}</span>
-                </div>
-                <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' }}>
-                  <div 
-                    style={{ 
-                      height: '100%', 
-                      width: `${Math.min(100, (((event.totalRegistrations || 0) / event.maxCapacity) * 100))}%`, 
-                      background: isFull ? 'var(--danger)' : 'var(--primary)',
-                      borderRadius: '9999px',
-                      transition: 'width 0.3s ease'
-                    }} 
-                  />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  <span>{event.availableSeats} seats remaining</span>
-                  <span>Free Registration</span>
-                </div>
-              </div>
-
-              {/* Details List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem', fontSize: '0.9rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Registration Deadline</span>
-                  <span style={{ fontWeight: 600, color: deadlinePassed ? 'var(--danger)' : 'inherit' }}>
-                    {event.registrationDeadline} {deadlinePassed && '(Closed)'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Event Date & Time</span>
-                  <span style={{ fontWeight: 600 }}>{event.eventDate} @ {event.eventTime}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Venue</span>
-                  <span style={{ fontWeight: 600 }}>{event.venue}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Check-in Pass</span>
-                  <span style={{ fontWeight: 600, color: 'var(--primary)' }}>Digital QR Pass</span>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              {isRegistered ? (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '1rem', borderRadius: '12px', color: '#065f46', marginBottom: '1rem', fontWeight: 600, fontSize: '0.95rem' }}>
-                    ✓ You are registered for this event!
-                  </div>
-                  <Link 
-                    to={`/qr-pass/${confirmedReg?.id || 'demo'}`} 
-                    className="btn btn-primary btn-block btn-lg"
-                  >
-                    View My QR Event Pass 🎟️
-                  </Link>
-                  <Link to="/my-registrations" className="btn btn-secondary btn-block" style={{ marginTop: '0.75rem' }}>
-                    Go to My Registrations
-                  </Link>
-                </div>
-              ) : (
-                <button
-                  onClick={handleRegister}
-                  disabled={submitting || isPast || deadlinePassed || isFull || event.isCancelled}
-                  className="btn btn-primary btn-block btn-lg"
-                  style={{
-                    opacity: (isPast || deadlinePassed || isFull || event.isCancelled) ? 0.6 : 1,
-                    cursor: (isPast || deadlinePassed || isFull || event.isCancelled) ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {submitting ? 'Confirming...' :
-                   event.isCancelled ? 'Event Cancelled' :
-                   isPast ? 'Event Has Ended' :
-                   deadlinePassed ? 'Deadline Passed' :
-                   isFull ? 'Capacity Full (Sold Out)' : 'Register for Event'}
-                </button>
-              )}
-
-              <p style={{ fontSize: '0.78rem', color: '#94a3b8', textAlign: 'center', marginTop: '1rem' }}>
-                Instant confirmation. A tamper-proof QR check-in pass will be issued to your account.
-              </p>
+          {/* Organizer Club Mini Banner */}
+          <div 
+            style={{ 
+              marginTop: '1.75rem', 
+              paddingTop: '1.25rem', 
+              borderTop: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              cursor: 'pointer'
+            }}
+            onClick={() => openClubModal({ id: event.clubId, name: event.clubName, logoUrl: event.clubLogoUrl })}
+            title="Click to view full club profile"
+          >
+            <img 
+              src={event.clubLogoUrl || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=100&q=80'} 
+              alt={event.clubName} 
+              style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)' }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Host Organization</div>
+              <strong style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                {event.clubName} <ExternalLink size={12} />
+              </strong>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Feedback Modal */}
+      <FeedbackModal 
+        event={event} 
+        isOpen={feedbackOpen} 
+        onClose={() => setFeedbackOpen(false)} 
+      />
     </div>
   );
 }
